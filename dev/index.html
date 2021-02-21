@@ -1,0 +1,113 @@
+<script type="text/javascript">
+
+async function go(){
+    const output = document.querySelector('output');
+//    console.log(output);
+    new Request('/git-add.html');
+    const request = await fetch('/git-add.html');
+    const html = await request.text();
+    const template = document.createElement('html');
+    template.innerHTML = html;
+//    const page = template.;
+ //   console.log(page);
+//    console.log(template);
+    const doc = template.querySelector("#documentation");
+    const main = doc.querySelector('#main');
+    const sections = main.querySelectorAll('.sect1');
+    let options = template.querySelector("#_options");
+//    console.log(options);
+    options = options.nextElementSibling;
+    options = options.querySelector("dl");
+//    console.log(options);
+
+    let commands=[
+        {
+          name: 'add',
+          description: 'Adds %s to the staging area, ready to be committed.',
+          flags: [
+            {
+              name: 'verbose',
+              aliases: ['v'],
+              description: 'Be verbose (allows the command to say more about what it does).',
+              isString: false,
+            }
+          ]
+        }
+    ];
+
+    let buffer = [];
+//    console.log('options parent');
+//    console.log(options);
+    const flags = [];
+    for (child of options.children){
+        let flag = {};
+//        console.log(child);
+        if (child.tagName=='DT'){
+            buffer.push(child);
+        } 
+        console.log(child.tagName);
+        if (child.tagName!='DD')continue;
+        let longest='';
+        let aliases=[];
+        for (dt of buffer){
+            let option = dt.innerText.trim();
+//            console.log(option);
+            if (option.length>longest.length)longest=option;
+            aliases.push(option);
+        }
+
+
+        aliases.splice(aliases.indexOf(longest),1);
+
+        flag.name = longest;
+        flag.aliases = aliases;
+        flag.description = child.innerText.trim();
+        flag.isString = false;
+        if (flag.name.includes('<')&&flag.name.includes('>'))flag.isString = true;
+        else {flag.name = flag.name.substring(2);}
+
+//        console.log({aliases:aliases, shortest:shortest})
+
+        flags.push(flag);
+        buffer = [];
+    }
+    console.log(flags);
+//    console.log(options);
+
+    output.innerText = JSON.stringify(flags, null, '\t');
+    output.style.whiteSpace = 'pre';
+//    output.innerHTML = options.innerHTML;
+
+}
+
+const gitCommands = {
+commands: [
+    {
+      name: 'add',
+      description: 'Adds %s to the staging area, ready to be committed.',
+      flags: [
+        {
+          name: 'verbose',
+          aliases: ['v'],
+          description: 'Be verbose (allows the command to say more about what it does).',
+          isString: false,
+        },
+          {name: 'anotherFlag'}
+      ]
+    },
+    {
+        name: 'anotherCommand',
+    }
+]
+};
+
+</script>
+
+<!-- <div id="output"></div> -->
+<output></output>
+
+
+
+<script type="text/javascript">
+    go();
+</script>

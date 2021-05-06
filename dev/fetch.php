@@ -1,0 +1,100 @@
+<?php
+
+$urls = [
+"/docs/git",
+"/docs/git-config",
+"/docs/git-help",
+"/docs/git-bugreport",
+"/docs/git-init",
+"/docs/git-clone",
+"/docs/git-add",
+"/docs/git-status",
+"/docs/git-diff",
+"/docs/git-commit",
+"/docs/git-notes",
+"/docs/git-restore",
+"/docs/git-reset",
+"/docs/git-rm",
+"/docs/git-mv",
+"/docs/git-branch",
+"/docs/git-checkout",
+"/docs/git-switch",
+"/docs/git-merge",
+"/docs/git-mergetool",
+"/docs/git-log",
+"/docs/git-stash",
+"/docs/git-tag",
+"/docs/git-worktree",
+"/docs/git-fetch",
+"/docs/git-pull",
+"/docs/git-push",
+"/docs/git-remote",
+"/docs/git-submodule",
+"/docs/git-show",
+"/docs/git-log",
+"/docs/git-diff",
+"/docs/git-difftool",
+"/docs/git-range-diff",
+"/docs/git-shortlog",
+"/docs/git-describe",
+"/docs/git-apply",
+"/docs/git-cherry-pick",
+"/docs/git-diff",
+"/docs/git-rebase",
+"/docs/git-revert",
+"/docs/git-bisect",
+"/docs/git-blame",
+"/docs/git-grep",
+"/docs/git-am",
+"/docs/git-apply",
+"/docs/git-format-patch",
+"/docs/git-send-email",
+"/docs/git-request-pull",
+"/docs/git-svn",
+"/docs/git-fast-import",
+"/docs/git-clean",
+"/docs/git-gc",
+"/docs/git-fsck",
+"/docs/git-reflog",
+"/docs/git-filter-branch",
+"/docs/git-instaweb",
+"/docs/git-archive",
+"/docs/git-bundle",
+"/docs/git-daemon",
+"/docs/git-update-server-info",
+"/docs/git-cat-file",
+"/docs/git-check-ignore",
+"/docs/git-checkout-index",
+"/docs/git-commit-tree",
+"/docs/git-count-objects",
+"/docs/git-diff-index",
+"/docs/git-for-each-ref",
+"/docs/git-hash-object",
+"/docs/git-ls-files",
+"/docs/git-ls-tree",
+"/docs/git-merge-base",
+"/docs/git-read-tree",
+"/docs/git-rev-list",
+"/docs/git-rev-parse",
+"/docs/git-show-ref",
+"/docs/git-symbolic-ref",
+"/docs/git-update-index",
+"/docs/git-update-ref",
+"/docs/git-verify-pack",
+"/docs/git-write-tree",
+];
+
+file_put_contents(__DIR__.'/all-files.json',json_encode($urls, JSON_PRETTY_PRINT));
+
+
+foreach ($urls as $d){
+    $url = "https://git-scm.com".$d;
+    $target = __DIR__.$d.'.html';
+    if (!file_exists($target)){
+        echo "\ngetting $d";
+        usleep(200000);
+        file_put_contents($target, file_get_contents($url));
+    }
+}
+
+echo "\n";

@@ -1,0 +1,122 @@
+<div id="documentation"></div>
+<script type="text/javascript">
+
+async function go(file){
+    console.log({start_file: file});
+    const output = document.querySelector('output');
+    const request = await fetch(file);
+    const html = await request.text();
+    const template = document.createElement('html');
+    template.innerHTML = html;
+
+    const doc = template.querySelector("#documentation");
+    const main = doc.querySelector('#main');
+    const sections = main.querySelectorAll('.sect1');
+    let options = template.querySelector("#_options");
+    if (options==null)return null;
+    options = options.nextElementSibling;
+    options = options.querySelector("dl");
+
+    let buffer = [];
+
+    //
+    // extract command name and description
+    //
+    let command_details = doc.querySelector("#main .sect1 .sectionbody .paragraph p").innerText;
+    
+    let parts = command_details.split(' - ');
+    let command_name = parts.shift();
+    let command_description = parts.join('');
+
+    let name_parts = command_name.trim().split('-');
+    if (name_parts.length>1)name_parts.shift();
+    command_name = name_parts.join('-');
+
+
+    //
+    // extract flags
+    //
+    const flags = [];
+    for (child of options.children){
+        let flag = {};
+        if (child.tagName=='DT'){
+            buffer.push(child);
+        } 
+        //console.log(child.tagName);
+        if (child.tagName!='DD')continue;
+        let longest='';
+        let aliases=[];
+        for (dt of buffer){
+            let option = dt.innerText.trim();
+            if (option.length>longest.length)longest=option;
+            aliases.push(option);
+        }
+
+        aliases.splice(aliases.indexOf(longest),1);
+
+        let reg = /^[a-zA-Z0-9\-]+/;
+        //console.log(longest);
+        let matchied = longest.match(reg);
+        if (matchied!=null)longest = matchied[0];
+
+        for (key in aliases){
+            let alias = aliases[key];
+            alias = alias.split(' ');
+            alias = alias.shift();
+            while (alias.substr(0,1)=='-') alias = alias.substr(1);
+            aliases[key] = alias;
+        }
+
+        flag.name = longest;
+        flag.aliases = aliases;
+        flag.description = child.innerText.trim();
+        flag.isString = false;
+        if (flag.name.includes('<')&&flag.name.includes('>'))flag.isString = true;
+        else {flag.name = flag.name.substring(2);}
+
+        flags.push(flag);
+        buffer = [];
+    }
+
+    const command = 
+    {
+      name: command_name,
+      description: command_description,
+      flags: flags
+    }
+
+    return command;
+
+}
+
+</script>
+
+<!-- <div id="output"></div> -->
+<output></output>
+
+
+
+<script type="text/javascript">
+    async function get_all(){
+        const request = await fetch('/dev/all-files.json');
+        let json = await request.json();
+//        json = json.slice(0,5);
+
+        const commandList = [];
+        for (url of json){
+
+            command = await go(url + '.html');
+            if (command==null){
+                console.log("Failed to parse "+url);
+                continue;
+            }
+            commandList.push(command);
+        }
+
+        const output = document.querySelector('output');
+        output.innerText = JSON.stringify(commandList, null, '\t');
+        output.style.whiteSpace = 'pre';
+    }
+    get_all();
+
+</script>

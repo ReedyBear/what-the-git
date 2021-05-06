@@ -8,9 +8,10 @@ import {
   getParsedFlagsDescriptions,
   getAliasesAsObject,
   replaceSpecialTokens,
+  parseDescription,
 } from './git-command-parsing'
-import { joinWithFinalAnd } from './utils'
 import { GitCommand, InputFlag } from './types'
+import { definitions } from './git-definitions'
 
 // Gets the matching git command from the git-commands.js file, and formats the description using the arguments if needed.
 function getGitCommand(inputCommand: string): GitCommand | null {
@@ -67,11 +68,12 @@ function getGitCommand(inputCommand: string): GitCommand | null {
   // Replace string tokens with arguments and add a list of flags descriptions if needed
   const updatedMatchingCommand = {
     ...matchingCommand,
-    description: matchingCommand.description.replace(
-      '%s',
-      joinWithFinalAnd(updatedParsedArguments._)
+    description: parseDescription(
+      matchingCommand as GitCommand,
+      definitions,
+      updatedParsedArguments
     ),
-    flagsDescriptions: getParsedFlagsDescriptions(matchingFlags || [], parsedArguments),
+    flagsDescriptions: getParsedFlagsDescriptions(matchingFlags || [], updatedParsedArguments),
   }
 
   return updatedMatchingCommand
@@ -79,7 +81,7 @@ function getGitCommand(inputCommand: string): GitCommand | null {
 
 function renderCommandDescription(command: GitCommand) {
   let flagsDescriptions
-  if (command.flagsDescriptions) {
+  if (command.flagsDescriptions.length > 0) {
     flagsDescriptions = command.flagsDescriptions.map((flag) => {
       return (
         <div>
@@ -120,37 +122,34 @@ function App() {
   }
 
   return (
-    <div className='App'>
-      <div className='App-container'>
-        <header className='App-header'>
-          <h1>
-            &gt;what the <span className='git'>git</span>
-          </h1>
-          <h2>enter a git command and have it explained to you</h2>
-        </header>
-        <div className='get-command-section'>
-          <input
-            type='text'
-            className='input-command'
-            placeholder='git commit -m "Add example command"'
-            onChange={(e) => setInputCommand(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.code === 'Enter') {
-                handleGetCommandClick(inputCommand)
-              }
-            }}
-          />
-          <button
-            className='get-command-button'
-            onClick={() => handleGetCommandClick(inputCommand)}
-          >
-            git it
-          </button>
-          {isInvalid && (
-            <h2 className='invalid-command-error'>error: the command is not a valid git command</h2>
-          )}
-          {Object.entries(matchingCommand).length > 0 && renderCommandDescription(matchingCommand)}
-        </div>
+    <div className='App-container'>
+      <header className='App-header'>
+        <h1>
+          &gt;what the <span className='git'>git</span>
+        </h1>
+        <h2>enter a git command and have it explained to you</h2>
+      </header>
+      <div className='get-command-section'>
+        <input
+          type='text'
+          className='input-command'
+          placeholder='git commit -m "Add example command"'
+          autoComplete='off'
+          autoCapitalize='off'
+          onChange={(e) => setInputCommand(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.code === 'Enter') {
+              handleGetCommandClick(inputCommand)
+            }
+          }}
+        />
+        <button className='get-command-button' onClick={() => handleGetCommandClick(inputCommand)}>
+          git it
+        </button>
+        {isInvalid && (
+          <h2 className='invalid-command-error'>error: the command is not a valid git command</h2>
+        )}
+        {Object.entries(matchingCommand).length > 0 && renderCommandDescription(matchingCommand)}
       </div>
     </div>
   )
